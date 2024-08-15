@@ -6,7 +6,7 @@ format:
     toc_float: true
     toc_depth: 5
 editor: source
-embed-resources: true
+embed-resources: false
 ---
   
 ```{r, setup}
@@ -125,10 +125,7 @@ freqs_sub_all$patient_id <- Bassez_applied[match(freqs_sub_all$Var2, Bassez_appl
 lvl <- levels(freqs_main_all$Var1)
 lvl <- lvl[!lvl %in% "Unassigned"]
 
-#i = "T CD4"
-
 pvals.main <- lapply(lvl, function(i){
-  cat(i,"\n")
   fma <- freqs_main_all[freqs_main_all$Var1 %in% i,]
   
 
@@ -153,7 +150,6 @@ cts <- cts[!cts %in% "Unassigned"]
 
 
 lapply(cts, function(CT){
-  cat(CT)
   fma <- freqs_main_all[freqs_main_all$Var1 %in% CT,]
 
   # Create a box plot
@@ -210,11 +206,10 @@ lvl.sub <- levels(freqs_sub_all$Var1)
 lvl.sub <- lvl.sub[grep("_",lvl.sub)]
 
 pvals.sub <- lapply(lvl.sub, function(i){
-  cat(i,"\n")
   fma <- freqs_sub_all[freqs_sub_all$Var1 %in% i,]
   
   # Pre / on within E /NE
-  fma.sub <- fma#[fma$expansion %in% ep & fma$expansion %in% c("NE","E"),]
+  fma.sub <- fma
   if(sum(fma.sub$Percentage) == 0) return()
   fit <- rstatix::wilcox_test(data = fma.sub, formula = Percentage~timepoint, p.adjust.method = "none", paired = TRUE)
   fit
@@ -244,7 +239,6 @@ getPlot <-function(ct.in){
   cts.o <- cts.o[cts.o %in% cts]
   
   lapply(cts.o, function(CT){
-    cat(CT)
     fma <- freqs_sub_all[freqs_sub_all$Var1 %in% CT,]
   
     # Create a box plot
@@ -253,14 +247,10 @@ getPlot <-function(ct.in){
       fill = "timepoint", palette = c("#96C66A", "#7172B4")
       )
     
-    
-    
-    
-    
     pvals.sub.sub <- pvals.sub[pvals.sub$CellType %in% CT,]
   
-    
-    bp <- boxplot(fma$Percentage, plot=F) # box plot is a simple way to identify outliers
+    # Identify outliers
+    bp <- boxplot(fma$Percentage, plot=F) 
     if(length(bp$out) > 0){outlier <- which(fma$Percentage %in% bp$out) # get the position of those outliers in your data
     
     maxv <- by(fma[-outlier,]$Percentage, fma[-outlier,]$timepoint, function(i){quantile(i, probs=0.99)}) %>% as.list() %>% do.call(what=c) %>% max(na.rm=T)
@@ -268,10 +258,6 @@ getPlot <-function(ct.in){
     maxv <- by(fma$Percentage, fma$timepoint, function(i){quantile(i, probs=0.99)}) %>% as.list() %>% do.call(what=c) %>% max(na.rm=T)
      
     }
-    
-
-    #maxv <- by(fma$Percentage, fma$timepoint, function(i){quantile(i, probs=0.95)}) %>% as.list() %>% do.call(what=c) %>% max(na.rm=T)
-    
     
     seqx <- 1+(0.1*c(1,3,5,7,9,11))
     
