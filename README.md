@@ -34,7 +34,17 @@ Bassez applied:
 [Click
 here](https://github.com/roderickslieker/CosMx_vHSIL/blob/master/002_Bassez_signature_applied.md)
 
-Franken applied
+Franken applied:
 
 [Click
 here](https://github.com/roderickslieker/CosMx_vHSIL/blob/master/003_Franken_applied.md)
+
+Cell type comparison for Conde et al.:
+
+[Click
+here](https://github.com/roderickslieker/CosMx_vHSIL/blob/master/004_CellTypes_Conde.md)
+
+Cell type comparison for Kong et al.:
+
+[Click
+here](https://github.com/roderickslieker/CosMx_vHSIL/blob/master/005_Kong_applied.md)
