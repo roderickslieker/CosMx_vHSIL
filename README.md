@@ -1,6 +1,12 @@
-### 1. Transfer CosMx
+### 0. Cell types
 
-CosMx cell types were transferred on external datasets:
+Main cell types were assigned using NanoString’s InSituType
+
+<https://github.com/Nanostring-Biostats/InSituType>
+
+### 1. Transfer CosMx cell types on external set:
+
+The following sets were included:
 
 Kong et al. The landscape of immune dysregulation in Crohn’s disease
 revealed through single-cell transcriptomic profiling in the ileum and
@@ -21,4 +27,4 @@ tissue-specific features in humans. Science 2022
 Transfer of cell types:
 
 [Click
-here](https://raw.githubusercontent.com/roderickslieker/CosMx_vHSIL/master/001_SignaturesAll.md)
+here](https://github.com/roderickslieker/CosMx_vHSIL/blob/master/001_SignaturesAll.md)
