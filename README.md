@@ -28,3 +28,13 @@ Transfer of cell types:
 
 [Click
 here](https://github.com/roderickslieker/CosMx_vHSIL/blob/master/001_SignaturesAll.md)
+
+Bassez applied:
+
+[Click
+here](https://github.com/roderickslieker/CosMx_vHSIL/blob/master/002_Bassez_signature_applied.md)
+
+Franken applied
+
+[Click
+here](https://github.com/roderickslieker/CosMx_vHSIL/blob/master/003_Franken_applied.md)
