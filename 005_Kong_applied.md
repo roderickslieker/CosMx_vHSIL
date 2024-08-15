@@ -87,17 +87,3 @@ dev.off()
 
     quartz_off_screen 
                     2 
-
-``` r
-freq <- table(Kong_applied$mainClass, Kong_applied$anno2) %>% t() %>% as.data.frame()
-freq.all <- table(Kong_applied$mainClass) %>% as.data.frame()
-freq$Total <- freq.all[match(freq$Var2, freq.all$Var1),2]
-freq$Percentage <- (freq$Freq / freq$Total)*100
-
-ggplot(freq, aes(x=Var2, y=Var1, fill=Percentage))+
-  geom_tile()+
-  theme(axis.text.x=element_text(angle=90, vjust=0.3, hjust=1))+
-  scale_fill_gradientn(colors = c("white","blue","black"))
-```
-
-![](005_Kong_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-7-1.png)
