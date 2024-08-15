@@ -10,8 +10,6 @@
 -   [Frequency across conditions](#frequency-across-conditions)
 -   [Add meta info](#add-meta-info)
 -   [Add PID](#add-pid)
--   [Main classes](#main-classes)
-    -   [Plots](#plots)
 -   [Subtypes](#subtypes)
 
 ``` r
@@ -79,7 +77,7 @@ ggplot(t.sub, aes(x=Var2, y=Var1, fill=Percentage))+
   scale_fill_gradientn(colours = c("white","blue","black"))
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-6-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-6-1.png)
 
 ## Frequency across conditions
 
@@ -114,172 +112,6 @@ freqs_sub_all$timepoint <- factor(freqs_sub_all$timepoint, levels=c("Pre","On"))
 freqs_main_all$patient_id <- Bassez_applied[match(freqs_main_all$Var2, Bassez_applied$Tumour_ID),"patient_id"]
 freqs_sub_all$patient_id <- Bassez_applied[match(freqs_sub_all$Var2, Bassez_applied$Tumour_ID),"patient_id"]
 ```
-
-## Main classes
-
-### Plots
-
-``` r
-lvl <- levels(freqs_main_all$Var1)
-lvl <- lvl[!lvl %in% "Unassigned"]
-
-pvals.main <- lapply(lvl, function(i){
-  fma <- freqs_main_all[freqs_main_all$Var1 %in% i,]
-  
-
-  if(sum(fma$Percentage) == 0) return()
-  fma <- fma[order(fma$patient_id),]
- 
-
-  fit <- rstatix::wilcox_test(data = fma, formula = Percentage~timepoint, p.adjust.method = "none", paired = TRUE)
-  fit
-  fit$CellType <- i
-  fit
-}) %>% do.call(what=rbind)
-
-
-mx <- by(freqs_main_all$Percentage, freqs_main_all$Var1, function(i){quantile(i, probs=0.95)}) %>% as.list() %>% do.call(what=c)
-```
-
-``` r
-cts <- as.character(unique(freqs_main_all$Var1))
-cts <- cts[!cts %in% "Unassigned"]
-
-
-lapply(cts, function(CT){
-  fma <- freqs_main_all[freqs_main_all$Var1 %in% CT,]
-
-  # Create a box plot
-  bxp <- ggboxplot(outlier.shape=NA,
-    fma, x = "timepoint", y = "Percentage",
-    fill = "timepoint", palette = c("#96C66A", "#7172B4")
-    )
-  
-  pvals.sub <- pvals.main[pvals.main$CellType %in% CT,]
-  
-  
-  bp <- boxplot(fma$Percentage, plot=F) # box plot is a simple way to identify outliers
-  if(length(bp$out) > 0){outlier <- which(fma$Percentage %in% bp$out) # get the position of those outliers in your data
-    
-   maxv <- by(fma[-outlier,]$Percentage, fma[-outlier,]$timepoint, function(i){quantile(i, probs=0.95)}) %>% as.list() %>% do.call(what=c) %>% max(na.rm=T)
-  }else{
-    maxv <- by(fma$Percentage, fma$timepoint, function(i){quantile(i, probs=0.95)}) %>% as.list() %>% do.call(what=c) %>% max(na.rm=T)
-  }
-  
-  
-  seqx <- (0.1*c(1,3,5,7,9,11))
-  
-  pvals.sub$y.position <- (maxv)*seqx[1:nrow(pvals.sub)]
-  #seqx <- seqx[-(1:nrow(pvals.sub))]
-  #pvals.sub$y.position <- (maxv)*seqx[1:nrow(pvals.sub)]
-
-  
-  pvals.sub <- add_significance(pvals.sub)
-
-  if(nrow(pvals.sub) >= 1){
-      maxx <- max(pvals.sub$y.position)
-  }else{
-    maxx <- maxv
-  }
-  pvals.sub$x <- 1.5
-  pvals.sub$xmin <- 1
-  pvals.sub$xmax <- 2
-  pvals.sub <- pvals.sub[pvals.sub$p <= 0.05,]
-  bxp + coord_cartesian(ylim = c(0, maxx)) +stat_pvalue_manual(
-    pvals.sub,  label = "p.signif", tip.length = 0)+
-    theme(legend.position = "bottom")+
-    ggtitle(CT)
-})
-```
-
-    [[1]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-1.png)
-
-
-    [[2]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-2.png)
-
-
-    [[3]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-3.png)
-
-
-    [[4]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-4.png)
-
-
-    [[5]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-5.png)
-
-
-    [[6]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-6.png)
-
-
-    [[7]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-7.png)
-
-
-    [[8]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-8.png)
-
-
-    [[9]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-9.png)
-
-
-    [[10]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-10.png)
-
-
-    [[11]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-11.png)
-
-
-    [[12]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-12.png)
-
-
-    [[13]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-13.png)
-
-
-    [[14]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-14.png)
-
-
-    [[15]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-15.png)
-
-
-    [[16]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-16.png)
-
-
-    [[17]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-17.png)
-
-
-    [[18]]
-
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-18.png)
 
 ## Subtypes
 
@@ -370,7 +202,7 @@ getPlot <-function(ct.in){
 getPlot("T CD4")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-14-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-12-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_TCD4.pdf", width=15, height=14)
@@ -385,7 +217,7 @@ dev.off()
 getPlot("T CD8")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-15-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-13-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_TCD8.pdf", width=15, height=10)
@@ -400,7 +232,7 @@ dev.off()
 getPlot("Treg")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-16-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-14-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_Treg.pdf", width=15, height=9)
@@ -415,7 +247,7 @@ dev.off()
 getPlot("B-cell")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-17-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-15-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_Bcell.pdf", width=15, height=9)
@@ -430,7 +262,7 @@ dev.off()
 getPlot("endothelial")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-18-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-16-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_endothelial.pdf", width=15, height=13)
@@ -445,7 +277,7 @@ dev.off()
 getPlot("fibroblast")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-19-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-17-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_fibroblast.pdf", width=15, height=13)
@@ -460,7 +292,7 @@ dev.off()
 getPlot("macrophage")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-20-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-18-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_macrophage.pdf", width=15, height=13)
@@ -475,7 +307,7 @@ dev.off()
 getPlot("mast")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-21-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-19-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_mast.pdf", width=15, height=9)
@@ -490,7 +322,7 @@ dev.off()
 getPlot("mDC")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-22-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-20-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_mDC.pdf", width=15, height=14)
@@ -505,7 +337,7 @@ dev.off()
 getPlot("pDC")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-23-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-21-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_pDC.pdf", width=15, height=9)
@@ -520,7 +352,7 @@ dev.off()
 getPlot("plasma cell")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-24-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-22-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_plasmacell.pdf", width=15, height=13)
@@ -535,7 +367,7 @@ dev.off()
 getPlot("neutrophil")
 ```
 
-![](005_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-25-1.png)
+![](002_Bassez_signature_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-23-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Bassez_noSplit_neutrophil.pdf", width=15, height=5)
