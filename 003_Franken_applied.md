@@ -53,20 +53,14 @@ meta <- rio::import("/Users/rcslieker/Documents/ONCO/002_Projects/000_Data/002_P
     file write command that created the file to create a valid file.
 
 ``` r
-expander <- rio::import("/Users/rcslieker/Documents/ONCO/002_Projects/000_Data/002_Public_Datasets/Franken_Immunity/ExpanderNonExpander.xlsx")
-meta$ENE <- expander[match(meta$Patient, expander$Patient),2]
-
 meta$Treatment <- "Durvalumab"
-#sort(unique(meta$Patient))
 ```
 
 ``` r
 metax <- meta[match(rownames(Franken_applied), meta$V1),]
 
-
 Franken_applied$Treatment <- metax$Treatment
 Franken_applied$SampleType <- metax$SampleType
-
 
 fa <- Franken_applied[,c("Patient","SampleType","Treatment")] %>% unique()
 
@@ -131,10 +125,6 @@ freqs_sub$Percentage <- as.numeric((freqs_sub$value / freqs_sub$Total)*100)
 freqs_main$TreatmentGroup <- Franken_applied[match(freqs_main$Var2, Franken_applied$samples),"treatment.group"]
 freqs_sub$TreatmentGroup <- Franken_applied[match(freqs_sub$Var2, Franken_applied$samples),"treatment.group"]
 
-#Add expander
-freqs_main$ENE <- expander[match(freqs_main$Var3, expander$Patient),2]
-freqs_sub$ENE <- expander[match(freqs_sub$Var3, expander$Patient),2]
-
 freqs_main <- freqs_main[!is.nan(freqs_main$Percentage),]
 freqs_sub <- freqs_sub[!is.nan(freqs_sub$Percentage),]
 
@@ -154,11 +144,8 @@ Franken_applied.sub$Class <- cts.sns[match(Franken_applied.sub$subClass, cts.sns
 freqs_sns_all <- table(Franken_applied.sub$Class, Franken_applied.sub$ID) %>% t()
 freqs_sns_all <- as.data.frame.matrix(freqs_sns_all)
 freqs_sns_all$ID <- rownames(freqs_sns_all)
-Franken_applied$expansion <- expander[match(Franken_applied$Patient, expander$Patient),2]
-freqs_sns_all <- data.frame(freqs_sns_all, Franken_applied[match(freqs_sns_all$ID, Franken_applied$ID),c("Treatment","expansion","SampleType")])
+freqs_sns_all <- data.frame(freqs_sns_all, Franken_applied[match(freqs_sns_all$ID, Franken_applied$ID),c("Treatment","SampleType")])
 
-#freqs_sns_all$timepoint <- factor(freqs_sns_all$SampleType, levels=c("Pre","On"))
-freqs_sns_all$expansion <- factor(freqs_sns_all$expansion, levels=c("NE","E"))
 freqs_sns_all$ratio <- freqs_sns_all$Supportive / freqs_sns_all$Non.supportive
 
 all.f <- table(Franken_applied$ID)
@@ -201,100 +188,6 @@ dev.off()
     quartz_off_screen 
                     2 
 
-``` r
-ggplot(freqs_sns_sub, aes(x=Non.supportive.p, y=Supportive.p))+
-  geom_point(aes(col=timepoint))+
-  geom_abline(intercept = 0, slope=1, col="gray")+
-  stat_density_2d(geom = "polygon", aes(alpha = ..level.., fill = timepoint))+
-  scale_colour_manual(values = c("#96C66A","#7172B4"))+
-  scale_fill_manual(values = c("#96C66A","#7172B4"))+
-  facet_grid(~expansion)+
-  ylim(0,50)+
-  xlim(0,50)+
-  plot_layout(ncol=2, widths = c(1/3,2/3))+
-  xlab("Percentage non-supportive cells")+
-  ylab("Percentage supportive cells")
-```
-
-    Warning: The dot-dot notation (`..level..`) was deprecated in ggplot2 3.4.0.
-    ℹ Please use `after_stat(level)` instead.
-
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-11-1.png)
-
-``` r
-ggpaired(freqs_sns_sub, x = "timepoint", y = "ratio",
-         fill = "timepoint", line.color = "gray", line.size = 0.4, palette = c("#96C66A","#7172B4"))+
-  stat_compare_means(paired = TRUE)+
-  theme(legend.position = 'none')+
-  ylab("Ratio (Supportive / Non-supportive)")+
-  xlab("Treatment timepoint")
-```
-
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-12-1.png)
-
-``` r
-pdf("./004_PaperFigures/Franken_Ratio_S.NS_PreOn.pdf", width=5, height=4)
-
-ggpaired(freqs_sns_sub, x = "timepoint", y = "ratio",
-         fill = "timepoint", line.color = "gray", line.size = 0.4, palette = c("#96C66A","#7172B4"))+
-  stat_compare_means(paired = TRUE)+
-  theme(legend.position = 'none')+
-  ylab("Ratio (Supportive / Non-supportive)")+
-  xlab("Treatment timepoint")
-dev.off()
-```
-
-    quartz_off_screen 
-                    2 
-
-``` r
-ggpaired(freqs_sns_sub[freqs_sns_sub$expansion %in% "NE",], x = "timepoint", y = "ratio",
-         fill = "timepoint", line.color = "gray", line.size = 0.4, palette = c("#96C66A","#7172B4"))+
-  stat_compare_means(paired = TRUE)+
-  theme(legend.position = 'none')+
-  ylab("Ratio (Supportive / Non-supportive)")+
-  xlab("Treatment timepoint")+
-  ggtitle("Non-expanders")+
-  ylim(0,3)+
-  ggpaired(freqs_sns_sub[freqs_sns_sub$expansion %in% "E",], x = "timepoint", y = "ratio",
-         fill = "timepoint", line.color = "gray", line.size = 0.4, palette = c("#96C66A","#7172B4"))+
-  stat_compare_means(paired = TRUE)+
-  theme(legend.position = 'none')+
-  ylab("Ratio (Supportive / Non-supportive)")+
-  xlab("Treatment timepoint")+
-  ggtitle("Expanders")+
-  ylim(0,3)
-```
-
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-13-1.png)
-
-``` r
-  pdf("./004_PaperFigures/Franken_Ratio_ExpNonExp_S.NS_PreOn.pdf", width=5, height=4)
-
-ggpaired(freqs_sns_sub[freqs_sns_sub$expansion %in% "NE",], x = "timepoint", y = "ratio",
-         fill = "timepoint", line.color = "gray", line.size = 0.4, palette = c("#96C66A","#7172B4"))+
-  stat_compare_means(paired = TRUE)+
-  theme(legend.position = 'none')+
-  ylab("Ratio (Supportive / Non-supportive)")+
-  xlab("Treatment timepoint")+
-  ggtitle("Non-expanders")+
-  ylim(0,3)+
-  ggpaired(freqs_sns_sub[freqs_sns_sub$expansion %in% "E",], x = "timepoint", y = "ratio",
-         fill = "timepoint", line.color = "gray", line.size = 0.4, palette = c("#96C66A","#7172B4"))+
-  stat_compare_means(paired = TRUE)+
-  theme(legend.position = 'none')+
-  ylab("Ratio (Supportive / Non-supportive)")+
-  xlab("Treatment timepoint")+
-  ggtitle("Expanders")+
-  ylim(0,3)
-
-
-dev.off()
-```
-
-    quartz_off_screen 
-                    2 
-
 ### All on top
 
 ``` r
@@ -310,10 +203,9 @@ freqs_sns_ct <- lapply(unique(Franken_applied.sub$mainClass_fromSub), function(c
   if(ncol(freqs_sns_all) == 1) return()
   freqs_sns_all <- as.data.frame.matrix(freqs_sns_all)
   freqs_sns_all$ID <- rownames(freqs_sns_all)
-  freqs_sns_all <- data.frame(freqs_sns_all, Franken_applied[match(freqs_sns_all$ID, Franken_applied$ID),c("expansion","SampleType")])
+  freqs_sns_all <- data.frame(freqs_sns_all, SampleType = Franken_applied[match(freqs_sns_all$ID, Franken_applied$ID),"SampleType"])
   freqs_sns_all <- freqs_sns_all[freqs_sns_all$SampleType %in% c("Pre-treatment","On-treatment"),]
   freqs_sns_all$timepoint <- factor(freqs_sns_all$SampleType, levels=c("Pre-treatment","On-treatment"))
-  freqs_sns_all$expansion <- factor(freqs_sns_all$expansion, levels=c("NE","E"))
   freqs_sns_all$ratio <- freqs_sns_all$Supportive / freqs_sns_all$Non.supportive
   freqs_sns_all$ct <- ct
   freqs_sns_all
@@ -321,18 +213,6 @@ freqs_sns_ct <- lapply(unique(Franken_applied.sub$mainClass_fromSub), function(c
 ```
 
     TregmacrophageT CD8fibroblastmDCendothelialmastT CD4pDC
-
-``` r
-ggplot(freqs_sns_ct, aes(x=timepoint, y=ratio, fill=expansion))+
-  geom_boxplot()+
-  facet_wrap(~ct, ncol=7, scale="free")+
-  ylab("Ratio (Supportive / Non-supportive)")
-```
-
-    Warning: Removed 18 rows containing non-finite outside the scale range
-    (`stat_boxplot()`).
-
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-15-1.png)
 
 ## Subtypes
 
@@ -485,7 +365,7 @@ getPlot <-function(ct.in){
 getPlot(ct.in = "T CD4")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-19-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-15-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_TCD4.pdf", width=15, height=14)
@@ -500,7 +380,7 @@ dev.off()
 getPlot("T CD8")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-20-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-16-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_TCD8.pdf", width=15, height=10)
@@ -515,7 +395,7 @@ dev.off()
 getPlot("Treg")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-21-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-17-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_Treg.pdf", width=15, height=9)
@@ -530,7 +410,7 @@ dev.off()
 getPlot("B-cell")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-22-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-18-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_Bcell.pdf", width=15, height=9)
@@ -545,7 +425,7 @@ dev.off()
 getPlot("endothelial")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-23-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-19-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_endothelial.pdf", width=15, height=13)
@@ -560,7 +440,7 @@ dev.off()
 getPlot("fibroblast")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-24-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-20-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_fibroblast.pdf", width=15, height=13)
@@ -575,7 +455,7 @@ dev.off()
 getPlot("macrophage")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-25-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-21-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_macrophage.pdf", width=15, height=13)
@@ -590,7 +470,7 @@ dev.off()
 getPlot("mast")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-26-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-22-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_mast.pdf", width=15, height=9)
@@ -605,7 +485,7 @@ dev.off()
 getPlot("mDC")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-27-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-23-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_mDC.pdf", width=15, height=14)
@@ -620,7 +500,7 @@ dev.off()
 getPlot("pDC")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-28-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-24-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_pDC.pdf", width=15, height=5)
@@ -635,7 +515,7 @@ dev.off()
 getPlot("plasma cell")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-29-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-25-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_plasmacell.pdf", width=15, height=13)
@@ -650,7 +530,7 @@ dev.off()
 getPlot("neutrophil")
 ```
 
-![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-30-1.png)
+![](003_Franken_applied.markdown_strict_files/figure-markdown_strict/unnamed-chunk-26-1.png)
 
 ``` r
 pdf("./004_PaperFigures/Franken_neutrophil.pdf", width=15, height=5)
