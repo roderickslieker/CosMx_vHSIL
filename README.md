@@ -50,3 +50,6 @@ Cell type comparison for Kong et al.:
 here](https://github.com/roderickslieker/CosMx_vHSIL/blob/master/005_Kong_applied.md)
 
 Cell type comparison, normal/tumor Kang et al.:
+
+[Click
+here](https://github.com/roderickslieker/CosMx_vHSIL/blob/master/006_Kang_applied.md)
